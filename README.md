@@ -8,6 +8,9 @@
   A quiet, local-first EPUB, TXT, and PDF reader for Windows.
   <br>
   Your books, reading progress, annotations, and statistics stay on your computer.
+  <br><br>
+  面向 Windows 的安静、本地优先 EPUB、TXT 与 PDF 阅读器。<br>
+  书籍、阅读进度、标注和统计数据都保留在你的电脑上。
 </p>
 
 <p align="center">
