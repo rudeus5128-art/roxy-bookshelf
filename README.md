@@ -18,7 +18,7 @@
   <img src="https://img.shields.io/badge/version-1.0.1-1769FF" alt="Version 1.0.1">
 </p>
 
-![Roxy 的书架界面](./docs/screenshots/bookshelf.png)
+![Roxy 的书架 v1.0.1 界面](./docs/screenshots/bookshelf-v1.0.1.png)
 
 ## 为什么选择 Roxy
 
