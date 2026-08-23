@@ -66,6 +66,21 @@ Roxy 不追求成为功能最多的阅读器。它专注于稳定、安全、快
 
 完整产品约束参见 [ROXY_PRODUCT_SPEC.txt](./ROXY_PRODUCT_SPEC.txt)。
 
+## 下载与 Windows SmartScreen
+
+请只从本仓库的 [Releases](https://github.com/rudeus5128-art/roxy-bookshelf/releases) 页面下载安装包。
+
+Roxy 当前是个人维护的开源项目，Windows 安装包尚未购买商业代码签名证书。因此 Microsoft Edge
+或 Windows SmartScreen 可能提示“通常不会下载”“未知发布者”或“Windows 已保护你的电脑”。
+这类提示通常表示该版本尚未积累下载信誉，并不等同于检测到病毒。
+
+每个 Release 都附带 SHA-256 校验文件。只有在确认下载来源为本仓库、且文件哈希一致后，
+才建议在 Edge 中选择“保留”，或在 SmartScreen 中选择“更多信息 → 仍要运行”。
+
+```powershell
+Get-FileHash -Algorithm SHA256 .\Roxy-Bookshelf-1.0.1-Setup.exe
+```
+
 ## 开发环境
 
 - Windows 10/11
