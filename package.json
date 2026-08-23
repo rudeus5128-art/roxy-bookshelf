@@ -1,6 +1,6 @@
 {
   "name": "roxy-bookshelf",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "Roxy 的书架 — 本地优先的 Windows 电子书阅读器",
   "main": "out/main/index.js",

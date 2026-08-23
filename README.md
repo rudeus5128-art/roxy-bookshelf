@@ -15,7 +15,7 @@
 <p align="center">
   <a href="https://github.com/rudeus5128-art/roxy-bookshelf/actions/workflows/ci.yml"><img src="https://github.com/rudeus5128-art/roxy-bookshelf/actions/workflows/ci.yml/badge.svg" alt="Windows CI"></a>
   <img src="https://img.shields.io/badge/platform-Windows-1769FF" alt="Windows">
-  <img src="https://img.shields.io/badge/version-1.0.0-1769FF" alt="Version 1.0.0">
+  <img src="https://img.shields.io/badge/version-1.0.1-1769FF" alt="Version 1.0.1">
 </p>
 
 ![Roxy 的书架界面](./docs/screenshots/bookshelf.png)
@@ -35,6 +35,21 @@ Roxy 不追求成为功能最多的阅读器。它专注于稳定、安全、快
 - EPUB / TXT 自适应单页与双页布局，兼顾全屏与窗口阅读
 - 仅在真实阅读活动期间累计的本地阅读统计
 - 完整明暗主题和 Windows 文件关联，资源管理器中可直接打开
+
+## 三种格式，一套安静的阅读体验
+
+<table>
+  <tr>
+    <td align="center" width="33%"><img src="./build/epub-large.png" width="150" alt="EPUB 文件图标"></td>
+    <td align="center" width="33%"><img src="./build/txt-large.png" width="150" alt="TXT 文件图标"></td>
+    <td align="center" width="33%"><img src="./build/pdf-large.png" width="150" alt="PDF 文件图标"></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>EPUB</strong><br>封面、目录、插图、正文搜索与自适应单双页</td>
+    <td align="center"><strong>TXT</strong><br>多编码识别、章节目录、大文件分块与自适应单双页</td>
+    <td align="center"><strong>PDF</strong><br>连续滚动、单页双页、目录、搜索、缩放与页面适配</td>
+  </tr>
+</table>
 
 ## 阅读界面
 
