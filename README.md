@@ -66,11 +66,11 @@ After file associations are enabled during installation, Windows File Explorer u
 
 ### Reading
 
-![Roxy TXT reader](./docs/screenshots/reader.png)
+![Roxy TXT reader](./docs/screenshots/reader-v1.0.2-en.png)
 
 ### Local reading statistics
 
-![Roxy reading statistics](./docs/screenshots/statistics-v1.0.1.png)
+![Roxy reading statistics](./docs/screenshots/statistics-v1.0.2-en.png)
 
 Reading time is counted only while the reader is in front, the window has focus, and recent reading activity such as scrolling or page navigation has occurred.
 
