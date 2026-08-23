@@ -6,6 +6,8 @@
 
 <p align="center">
   面向 Windows 的本地优先私人阅读器。让书留在你的电脑里，让阅读回到正文。
+  <br>
+  <em>A local-first Windows EPUB, TXT and PDF reader.</em>
 </p>
 
 <p align="center">
@@ -16,6 +18,12 @@
   <a href="https://github.com/rudeus5128-art/roxy-bookshelf/actions/workflows/ci.yml"><img src="https://github.com/rudeus5128-art/roxy-bookshelf/actions/workflows/ci.yml/badge.svg" alt="Windows CI"></a>
   <img src="https://img.shields.io/badge/platform-Windows-1769FF" alt="Windows">
   <img src="https://img.shields.io/badge/version-1.0.1-1769FF" alt="Version 1.0.1">
+</p>
+
+<p align="center">
+  <strong><a href="https://github.com/rudeus5128-art/roxy-bookshelf/releases/latest">下载最新版</a></strong>
+  ·
+  <a href="./README.en.md">English</a>
 </p>
 
 ![Roxy 的书架 v1.0.1 界面](./docs/screenshots/bookshelf-v1.0.1.png)
@@ -81,7 +89,8 @@ Roxy 只在阅读页面位于前台、窗口保持焦点且近期存在翻页、
 
 ## 下载与 Windows SmartScreen
 
-请只从本仓库的 [Releases](https://github.com/rudeus5128-art/roxy-bookshelf/releases) 页面下载安装包。
+请从 [最新版发布页](https://github.com/rudeus5128-art/roxy-bookshelf/releases/latest) 下载 Windows 安装包；
+需要查看旧版本时可前往完整的 [Releases](https://github.com/rudeus5128-art/roxy-bookshelf/releases) 页面。
 
 Roxy 当前是个人维护的开源项目，Windows 安装包尚未购买商业代码签名证书。因此 Microsoft Edge
 或 Windows SmartScreen 可能提示“通常不会下载”“未知发布者”或“Windows 已保护你的电脑”。

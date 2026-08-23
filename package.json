@@ -3,6 +3,16 @@
   "version": "1.0.1",
   "private": true,
   "description": "Roxy 的书架 — 本地优先的 Windows 电子书阅读器",
+  "keywords": [
+    "ebook-reader",
+    "epub-reader",
+    "txt-reader",
+    "pdf-reader",
+    "windows",
+    "electron",
+    "offline-first",
+    "local-first"
+  ],
   "main": "out/main/index.js",
   "author": "Roxy",
   "license": "SEE LICENSE IN LICENSE",
