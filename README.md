@@ -12,6 +12,12 @@
   <strong>EPUB</strong> · <strong>TXT</strong> · <strong>PDF</strong> · 完全离线 · 无账户 · 无遥测
 </p>
 
+<p align="center">
+  <a href="https://github.com/rudeus5128-art/roxy-bookshelf/actions/workflows/ci.yml"><img src="https://github.com/rudeus5128-art/roxy-bookshelf/actions/workflows/ci.yml/badge.svg" alt="Windows CI"></a>
+  <img src="https://img.shields.io/badge/platform-Windows-1769FF" alt="Windows">
+  <img src="https://img.shields.io/badge/version-1.0.0-1769FF" alt="Version 1.0.0">
+</p>
+
 ![Roxy 的书架界面](./docs/screenshots/bookshelf.png)
 
 ## 为什么选择 Roxy

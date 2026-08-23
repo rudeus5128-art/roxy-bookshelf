@@ -1,0 +1,40 @@
+name: Bug report
+description: Report a reproducible problem in Roxy.
+title: "[Bug] "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Please avoid attaching copyrighted books or private reading data.
+  - type: dropdown
+    id: format
+    attributes:
+      label: Book format
+      options: [EPUB, TXT, PDF, Not format-specific]
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: Describe the shortest reliable sequence of actions.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual behavior
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Roxy version and Windows version
+      placeholder: Roxy 1.0.0, Windows 11 24H2
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional context
+      description: Screenshots are welcome, but remove private filenames and reading content.
