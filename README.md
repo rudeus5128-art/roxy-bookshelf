@@ -1,144 +1,137 @@
 <p align="center">
-  <img src="./build/roxy-app-icon-character-v9-large.png" width="160" alt="Roxy 的书架图标">
+  <img src="./build/roxy-app-icon-character-v9-large.png" width="180" alt="Roxy Bookshelf icon">
 </p>
 
-<h1 align="center">Roxy 的书架</h1>
+<h1 align="center">Roxy Bookshelf</h1>
 
 <p align="center">
-  面向 Windows 的本地优先私人阅读器。让书留在你的电脑里，让阅读回到正文。
+  A quiet, local-first EPUB, TXT, and PDF reader for Windows.
   <br>
-  <em>A local-first Windows EPUB, TXT and PDF reader.</em>
+  Your books, reading progress, annotations, and statistics stay on your computer.
 </p>
 
 <p align="center">
-  <strong>EPUB</strong> · <strong>TXT</strong> · <strong>PDF</strong> · 完全离线 · 无账户 · 无遥测
+  <a href="./README.md"><strong>English</strong></a> | <a href="./README.zh-CN.md">简体中文</a>
 </p>
 
 <p align="center">
   <a href="https://github.com/rudeus5128-art/roxy-bookshelf/actions/workflows/ci.yml"><img src="https://github.com/rudeus5128-art/roxy-bookshelf/actions/workflows/ci.yml/badge.svg" alt="Windows CI"></a>
   <img src="https://img.shields.io/badge/platform-Windows-1769FF" alt="Windows">
-  <img src="https://img.shields.io/badge/version-1.0.1-1769FF" alt="Version 1.0.1">
+  <img src="https://img.shields.io/badge/version-1.0.2-1769FF" alt="Version 1.0.2">
 </p>
 
 <p align="center">
-  <strong><a href="https://github.com/rudeus5128-art/roxy-bookshelf/releases/latest">下载最新版</a></strong>
-  ·
-  <a href="./README.en.md">English</a>
+  <strong><a href="https://github.com/rudeus5128-art/roxy-bookshelf/releases/latest">Download the latest Windows release</a></strong>
 </p>
 
-![Roxy 的书架 v1.0.1 界面](./docs/screenshots/bookshelf-v1.0.1.png)
+![Roxy Bookshelf library](./docs/screenshots/bookshelf-v1.0.2-en.png)
 
-## 为什么选择 Roxy
+## About
 
-Roxy 不追求成为功能最多的阅读器。它专注于稳定、安全、快速地打开本地书籍，
-并用克制的界面保留阅读所需的能力。
+Roxy Bookshelf is a restrained desktop reader for people who keep their own ebook files. It focuses on fast access to local books, dependable reading-position recovery, and an interface that stays out of the way.
 
-## 特性
+Core reading works offline. Roxy has no account system, advertising, recommendation feed, telemetry, or cloud dependency, and it does not modify the original EPUB, TXT, or PDF files.
 
-- EPUB、TXT、PDF 本地阅读
-- 清晰的书架、搜索、自定义子书架与批量整理
-- 目录、正文搜索、可靠的阅读位置恢复、书签与高亮
-- TXT 自动编码识别，支持 UTF-8、UTF-16、GBK、GB18030 等编码切换
-- PDF 连续滚动、单页、双页、缩放及页面适配
-- EPUB / TXT 自适应单页与双页布局，兼顾全屏与窗口阅读
-- 仅在真实阅读活动期间累计的本地阅读统计
-- 完整明暗主题和 Windows 文件关联，资源管理器中可直接打开
+## Features
 
-## 三种格式，一套安静的阅读体验
+- Local EPUB, TXT, and PDF library
+- English (`en-US`) and Simplified Chinese (`zh-CN`) interface
+- Grid and list views, instant library search, reading-status filters, and recent reading
+- Custom color-coded shelves with drag-and-drop and batch organization
+- Contents, in-book search, bookmarks, highlights, and highlight erasing
+- Reliable reading-position restoration for all three formats
+- Adaptive one-page and two-page EPUB/TXT layouts for fullscreen and windowed reading
+- Local reading statistics based on active reading interaction rather than app-open time
+- Complete light and dark themes
+- Windows file associations for opening books directly from File Explorer
+
+## Supported formats
 
 <table>
   <tr>
-    <td align="center" width="33%"><img src="./build/epub-large.png" width="150" alt="EPUB 文件图标"></td>
-    <td align="center" width="33%"><img src="./build/txt-large.png" width="150" alt="TXT 文件图标"></td>
-    <td align="center" width="33%"><img src="./build/pdf-large.png" width="150" alt="PDF 文件图标"></td>
+    <td align="center" width="33%"><img src="./build/epub-large.png" width="150" alt="EPUB file icon"></td>
+    <td align="center" width="33%"><img src="./build/txt-large.png" width="150" alt="TXT file icon"></td>
+    <td align="center" width="33%"><img src="./build/pdf-large.png" width="150" alt="PDF file icon"></td>
   </tr>
   <tr>
-    <td align="center"><strong>EPUB</strong><br>封面、目录、插图、正文搜索与自适应单双页</td>
-    <td align="center"><strong>TXT</strong><br>多编码识别、章节目录、大文件分块与自适应单双页</td>
-    <td align="center"><strong>PDF</strong><br>连续滚动、单页双页、目录、搜索、缩放与页面适配</td>
+    <td align="center"><strong>EPUB</strong><br>Covers, contents, illustrations, search, adaptive pages, and reading themes</td>
+    <td align="center"><strong>TXT</strong><br>UTF-8, UTF-16, GBK, GB18030, chapter detection, and large-file indexing</td>
+    <td align="center"><strong>PDF</strong><br>Continuous, one-page, and two-page modes, contents, search, zoom, and page fitting</td>
   </tr>
 </table>
 
-安装 Roxy 并完成文件关联后，Windows 资源管理器中的 `.epub`、`.txt` 和 `.pdf`
-文件会分别使用上方展示的对应子图标，方便在文件夹中快速辨认格式。
+After file associations are enabled during installation, Windows File Explorer uses the format-specific icons shown above for `.epub`, `.txt`, and `.pdf` files.
 
-## 阅读界面
+## Screenshots
 
-工具栏保持紧凑，目录、搜索、书签、字号和版式设置在需要时才出现。
+### Reading
 
-![Roxy TXT 阅读界面](./docs/screenshots/reader.png)
+![Roxy TXT reader](./docs/screenshots/reader.png)
 
-## 阅读统计
+### Local reading statistics
 
-Roxy 只在阅读页面位于前台、窗口保持焦点且近期存在翻页、滚动、章节跳转等
-真实阅读操作时累计时长；长时间无操作会自动暂停，避免把“开着软件”误算成阅读。
+![Roxy reading statistics](./docs/screenshots/statistics-v1.0.1.png)
 
-统计页面提供今日、本月、今年和全部累计时长，以及最近 7 天 / 30 天趋势与简洁的
-年度汇总。所有记录只保存在本机，统计模块异常也不会影响打开或阅读书籍。
+Reading time is counted only while the reader is in front, the window has focus, and recent reading activity such as scrolling or page navigation has occurred.
 
-![Roxy 阅读统计界面](./docs/screenshots/statistics-v1.0.1.png)
+## Installation
 
-## 原则
+1. Open the [latest GitHub Release](https://github.com/rudeus5128-art/roxy-bookshelf/releases/latest).
+2. Download `Roxy-Bookshelf-1.0.2-Setup.exe`.
+3. Optionally compare its SHA-256 digest with the checksum published in the release.
+4. Run the installer and choose an installation directory.
 
-- 核心功能完全离线可用
-- 不上传书籍、文件名、阅读记录或统计数据
-- 不修改原始 EPUB、TXT、PDF 文件
-- 阅读器功能和本地数据异常不应损坏用户书籍
-
-完整产品约束参见 [ROXY_PRODUCT_SPEC.txt](./ROXY_PRODUCT_SPEC.txt)。
-
-## 下载与 Windows SmartScreen
-
-请从 [最新版发布页](https://github.com/rudeus5128-art/roxy-bookshelf/releases/latest) 下载 Windows 安装包；
-需要查看旧版本时可前往完整的 [Releases](https://github.com/rudeus5128-art/roxy-bookshelf/releases) 页面。
-
-Roxy 当前是个人维护的开源项目，Windows 安装包尚未购买商业代码签名证书。因此 Microsoft Edge
-或 Windows SmartScreen 可能提示“通常不会下载”“未知发布者”或“Windows 已保护你的电脑”。
-这类提示通常表示该版本尚未积累下载信誉，并不等同于检测到病毒。
-
-每个 Release 都附带 SHA-256 校验文件。只有在确认下载来源为本仓库、且文件哈希一致后，
-才建议在 Edge 中选择“保留”，或在 SmartScreen 中选择“更多信息 → 仍要运行”。
+Roxy is currently an unsigned independent open-source application. Microsoft Edge or Windows SmartScreen may show an uncommon-download or unknown-publisher warning. This indicates that the executable has not accumulated signed reputation; it is not, by itself, a malware detection. Only download Roxy from this repository and verify the release checksum.
 
 ```powershell
-Get-FileHash -Algorithm SHA256 .\Roxy-Bookshelf-1.0.1-Setup.exe
+Get-FileHash -Algorithm SHA256 .\Roxy-Bookshelf-1.0.2-Setup.exe
 ```
 
-## 开发环境
+## System requirements
 
-- Windows 10/11
-- Node.js 20 或更高版本
-- npm
+- Windows 10 or Windows 11, 64-bit
+- A modern laptop or desktop display; layouts adapt between windowed and fullscreen use
+- No network connection is required for core reading
+
+## Build from source
+
+Requirements: Windows 10/11, Node.js 20 or later, and npm.
 
 ```powershell
+git clone https://github.com/rudeus5128-art/roxy-bookshelf.git
+cd roxy-bookshelf
 npm install
-npm run dev
-```
-
-## 检查与构建
-
-```powershell
 npm run typecheck
 npm test
 npm run build
 npm run package:win
 ```
 
-`npm run package:win` 会生成 Windows NSIS 安装包。
+The production NSIS installer is written to `release/`.
 
-## 技术栈
+Roxy is built with Electron, React, TypeScript, epub.js, PDF.js, and sql.js.
 
-Electron、React、TypeScript、electron-vite、epub.js、PDF.js、sql.js。
+## Privacy and file safety
+
+- Original EPUB, TXT, and PDF files are read-only to Roxy
+- Metadata overrides, progress, shelves, annotations, and statistics are stored in the local application database
+- No book content, filename, reading record, or statistic is uploaded
+- Uninstalling Roxy does not delete the user’s original ebook folders
+
+## Known limitations
+
+- Windows only; macOS and Linux packages are not provided
+- The installer is not code-signed and may trigger Windows SmartScreen
+- PDF text search and highlighting depend on the PDF containing a usable text layer
+- DRM-protected or password-protected books are not supported
+- EPUB compatibility can still vary with malformed or non-standard publications
+
+## License
+
+Program source code that this project has the right to license is available under the [MIT License](./LICENSE).
+
+Third-party character artwork, illustrations, icons, reference images, and related visual materials in this repository are explicitly excluded from the MIT grant. They are not automatically available under MIT, CC0, CC BY, or another open-content license. Rights in third-party characters, names, artwork, and other intellectual property remain with their respective owners. See [THIRD_PARTY_ASSETS.md](./THIRD_PARTY_ASSETS.md).
 
 ## Credits
 
 tai and codex
-
-## 许可证与视觉素材
-
-程序源代码采用 [MIT License](./LICENSE)。MIT 授权仅适用于程序源代码，
-不适用于仓库中的第三方角色美术、插画、图标、参考图片或其他相关视觉素材。
-
-这些视觉素材不以 MIT、CC0、CC BY 或其他开放内容许可证提供。本项目不主张
-拥有其中涉及的第三方角色、名称、美术或其他知识产权，也不代表向使用者授予
-相关权利；所有相关权利归各自权利人所有。详情见
-[THIRD_PARTY_ASSETS.md](./THIRD_PARTY_ASSETS.md)。

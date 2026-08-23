@@ -3,10 +3,12 @@ import type { BookReadingStatistics, ReadingSessionHandle } from '../../shared/m
 import {
   formatReadingDuration, isReadingKey, READING_CHECKPOINT_SECONDS, shouldAccumulateReading
 } from './readingTimerCore'
+import { useI18n } from './I18nContext'
 
 interface Props { bookId: string; progress: number }
 
 export default function ReadingSessionStatus({ bookId, progress }: Props) {
+  const { language, t } = useI18n()
   const [sessionSeconds, setSessionSeconds] = useState(0)
   const [statistics, setStatistics] = useState<BookReadingStatistics | null>(null)
   const [detailsOpen, setDetailsOpen] = useState(false)
@@ -123,21 +125,21 @@ export default function ReadingSessionStatus({ bookId, progress }: Props) {
 
   const totalSeconds = (statistics?.totalActiveSeconds ?? 0) + sessionSeconds
   const dateTitle = statistics?.firstReadAt
-    ? `首次阅读 ${new Date(statistics.firstReadAt).toLocaleDateString()} · 最后阅读 ${new Date(statistics.lastReadAt ?? statistics.firstReadAt).toLocaleDateString()}`
-    : '发生翻页、滚动或阅读快捷键操作后开始计时'
-  const dateValue = (value: number | null) => value ? new Date(value).toLocaleDateString() : '暂无记录'
+    ? `${t('firstRead')} ${new Date(statistics.firstReadAt).toLocaleDateString(language)} · ${t('lastRead')} ${new Date(statistics.lastReadAt ?? statistics.firstReadAt).toLocaleDateString(language)}`
+    : t('timerHint')
+  const dateValue = (value: number | null) => value ? new Date(value).toLocaleDateString(language) : t('noRecord')
   return <div className="reading-statistics-control">
     <button className="reading-session-status" title={dateTitle} aria-expanded={detailsOpen} onClick={() => setDetailsOpen((current) => !current)}
       data-reading-session-seconds={sessionSeconds} data-reading-total-seconds={totalSeconds}>
-      {Math.round(progress * 100)}% · 已阅读 {formatReadingDuration(totalSeconds)} · 本次 {formatReadingDuration(sessionSeconds)}
+      {t('readingStatus', { percent: Math.round(progress * 100), total: formatReadingDuration(totalSeconds), session: formatReadingDuration(sessionSeconds) })}
     </button>
     {detailsOpen && <div className="book-statistics-popover">
-      <div><span>累计阅读</span><strong>{formatReadingDuration(totalSeconds)}</strong></div>
-      <div><span>本次阅读</span><strong>{formatReadingDuration(sessionSeconds)}</strong></div>
-      <div><span>首次阅读</span><strong>{dateValue(statistics?.firstReadAt ?? null)}</strong></div>
-      <div><span>最后阅读</span><strong>{dateValue(statistics?.lastReadAt ?? null)}</strong></div>
-      <div><span>当前进度</span><strong>{Math.round(progress * 100)}%</strong></div>
-      {statistics?.completedAt && <div><span>读完日期</span><strong>{dateValue(statistics.completedAt)}</strong></div>}
+      <div><span>{t('accumulatedReading')}</span><strong>{formatReadingDuration(totalSeconds)}</strong></div>
+      <div><span>{t('currentSession')}</span><strong>{formatReadingDuration(sessionSeconds)}</strong></div>
+      <div><span>{t('firstRead')}</span><strong>{dateValue(statistics?.firstReadAt ?? null)}</strong></div>
+      <div><span>{t('lastRead')}</span><strong>{dateValue(statistics?.lastReadAt ?? null)}</strong></div>
+      <div><span>{t('currentProgress')}</span><strong>{Math.round(progress * 100)}%</strong></div>
+      {statistics?.completedAt && <div><span>{t('completedDate')}</span><strong>{dateValue(statistics.completedAt)}</strong></div>}
     </div>}
   </div>
 }

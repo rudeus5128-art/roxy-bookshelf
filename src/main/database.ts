@@ -113,6 +113,7 @@ function migrateDatabase(): void {
       value TEXT NOT NULL
     );
     INSERT OR IGNORE INTO app_settings (key, value) VALUES ('pdf_first_page_covers', 'false');
+    INSERT OR IGNORE INTO app_settings (key, value) VALUES ('language', 'zh-CN');
   `)
   if (!hasColumn('books', 'completed')) db.run('ALTER TABLE books ADD COLUMN completed INTEGER NOT NULL DEFAULT 0')
   if (!hasColumn('books', 'completed_at')) db.run('ALTER TABLE books ADD COLUMN completed_at INTEGER')
@@ -247,17 +248,24 @@ export function setBooksShelves(assignments: BookShelfAssignment[]): void {
 }
 
 export function getAppSettings(): AppSettings {
-  const statement = db.prepare("SELECT value FROM app_settings WHERE key = 'pdf_first_page_covers'")
-  const value = rows<{ value: string }>(statement)[0]?.value
-  return { pdfFirstPageCovers: value === 'true' }
+  const values = rows<{ key: string; value: string }>(db.prepare("SELECT key, value FROM app_settings WHERE key IN ('pdf_first_page_covers', 'language')"))
+  const settings = Object.fromEntries(values.map((item) => [item.key, item.value]))
+  return {
+    pdfFirstPageCovers: settings.pdf_first_page_covers === 'true',
+    language: settings.language === 'en-US' ? 'en-US' : 'zh-CN'
+  }
 }
 
 export function updateAppSettings(settings: Partial<AppSettings>): AppSettings {
   if (typeof settings.pdfFirstPageCovers === 'boolean') {
     db.run("INSERT INTO app_settings (key, value) VALUES ('pdf_first_page_covers', ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
       [settings.pdfFirstPageCovers ? 'true' : 'false'])
-    persist()
   }
+  if (settings.language === 'en-US' || settings.language === 'zh-CN') {
+    db.run("INSERT INTO app_settings (key, value) VALUES ('language', ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+      [settings.language])
+  }
+  persist()
   return getAppSettings()
 }
 

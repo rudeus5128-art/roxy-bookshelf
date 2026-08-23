@@ -10,6 +10,7 @@ import ReadingSessionStatus from './ReadingSessionStatus'
 import { AnnotationPanel, SelectionHighlightAction, useBookAnnotations } from './AnnotationsPanel'
 import { loadPdfPreferences, savePdfPreferences } from './readerPreferences'
 import { friendlyReaderError } from './readerErrors'
+import { useI18n } from './I18nContext'
 
 GlobalWorkerOptions.workerSrc = workerUrl
 
@@ -49,6 +50,7 @@ function PdfPage({ document, pageNumber, scale, fallbackSize, scrollRoot, highli
   onSelection(selection: { locator: string; text: string; x: number; y: number }): void
   eager?: boolean
 }) {
+  const { t } = useI18n()
   const frameRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const textLayerRef = useRef<HTMLDivElement>(null)
@@ -136,10 +138,10 @@ function PdfPage({ document, pageNumber, scale, fallbackSize, scrollRoot, highli
     style={{ width: size.width, height: size.height, '--total-scale-factor': scale } as CSSProperties}
     onMouseUp={selectText}
   >
-    {visible && <canvas ref={canvasRef} aria-label={`第 ${pageNumber} 页`} />}
+    {visible && <canvas ref={canvasRef} aria-label={t('pageCanvas', { page: pageNumber })} />}
     {visible && <div className="pdf-highlight-layer" aria-hidden="true">{highlights.flatMap((annotation) => parsePdfHighlight(annotation.locator)?.rects ?? []).map((rect, index) => <i key={index} style={{ left: `${rect.x * 100}%`, top: `${rect.y * 100}%`, width: `${rect.width * 100}%`, height: `${rect.height * 100}%` }} />)}</div>}
     {visible && <div ref={textLayerRef} className="textLayer pdf-text-layer" />}
-    {failed && <span className="pdf-page-error">第 {pageNumber} 页渲染失败</span>}
+    {failed && <span className="pdf-page-error">{t('pageRenderFailed', { page: pageNumber })}</span>}
   </div>
 }
 
@@ -152,6 +154,7 @@ const DEFAULT_PDF_STATE: Omit<PdfReadingState, 'bookId' | 'totalPages' | 'update
 }
 
 export default function PDFReader({ bookRecord, theme, onThemeChange, onClose }: Props) {
+  const { language, t } = useI18n()
   const viewportRef = useRef<HTMLDivElement>(null)
   const documentRef = useRef<PDFDocumentProxy | null>(null)
   const stateRef = useRef<PdfReadingState | null>(null)
@@ -235,7 +238,7 @@ export default function PDFReader({ bookRecord, theme, onThemeChange, onClose }:
         if (!disposed) setLoading(false)
       } catch (reason) {
         if (!disposed) {
-          setError(friendlyReaderError('pdf', reason))
+          setError(friendlyReaderError('pdf', reason, language))
           setLoading(false)
         }
       }
@@ -248,7 +251,7 @@ export default function PDFReader({ bookRecord, theme, onThemeChange, onClose }:
       documentRef.current = null
       if (loadingTask) loadingTask.destroy().catch(() => {})
     }
-  }, [bookRecord.id])
+  }, [bookRecord.id, language])
 
   useEffect(() => {
     const viewport = viewportRef.current
@@ -328,7 +331,7 @@ export default function PDFReader({ bookRecord, theme, onThemeChange, onClose }:
 
   function renderOutline(items: OutlineItem[]) {
     return items.map((item, index) => <li key={`${item.title}-${index}`}>
-      <button onClick={async () => { const target = await outlinePage(item); if (target) jumpTo(target, true) }}>{item.title || '未命名章节'}</button>
+      <button onClick={async () => { const target = await outlinePage(item); if (target) jumpTo(target, true) }}>{item.title || t('unnamedChapter')}</button>
       {item.items?.length ? <ul>{renderOutline(item.items)}</ul> : null}
     </li>)
   }
@@ -364,7 +367,7 @@ export default function PDFReader({ bookRecord, theme, onThemeChange, onClose }:
   }
 
   async function addBookmark() {
-    if (page > 0) await annotationStore.add('bookmark', `pdf:${page}`, `第 ${page} 页`)
+    if (page > 0) await annotationStore.add('bookmark', `pdf:${page}`, t('pageBookmark', { page }))
   }
 
   async function jumpAnnotation(annotation: BookAnnotation) {
@@ -418,54 +421,54 @@ export default function PDFReader({ bookRecord, theme, onThemeChange, onClose }:
 
   return <main className="reader-shell pdf-reader-shell">
     <header className="reader-bar pdf-reader-bar">
-      <button className="icon-button" onClick={onClose} aria-label="返回书架"><ArrowLeft size={19} /></button>
+      <button className="icon-button" onClick={onClose} aria-label={t('backToLibrary')}><ArrowLeft size={19} /></button>
       <div className="reader-title"><strong>{bookRecord.title}</strong><ReadingSessionStatus bookId={bookRecord.id} progress={progress} /></div>
       <div className="reader-controls">
-        <button className="icon-button" onClick={() => setTocOpen(true)} aria-label="PDF 目录"><BookOpenText size={19} /></button>
+        <button className="icon-button" onClick={() => setTocOpen(true)} aria-label={t('pdfContents')}><BookOpenText size={19} /></button>
         <AnnotationPanel annotations={annotationStore.annotations} onAddBookmark={addBookmark} onJump={jumpAnnotation} onRemove={(annotation) => annotationStore.remove(annotation.id)} />
-        <button className="icon-button" onClick={() => { setSearchOpen(true); setTimeout(() => searchInputRef.current?.focus(), 0) }} aria-label="搜索 PDF"><Search size={18} /></button>
-        <label className="compact-control">显示<select value={viewMode} onChange={(event) => setViewMode(event.target.value as PdfViewMode)}>
-          <option value="continuous">连续</option><option value="single">单页</option><option value="double">双页</option>
+        <button className="icon-button" onClick={() => { setSearchOpen(true); setTimeout(() => searchInputRef.current?.focus(), 0) }} aria-label={t('searchPdf')}><Search size={18} /></button>
+        <label className="compact-control">{t('display')}<select value={viewMode} onChange={(event) => setViewMode(event.target.value as PdfViewMode)}>
+          <option value="continuous">{t('continuous')}</option><option value="single">{t('singlePage')}</option><option value="double">{t('doublePage')}</option>
         </select></label>
-        <label className="compact-control">缩放<select value={zoomMode} onChange={(event) => setZoomMode(event.target.value as PdfZoomMode)}>
-          <option value="fit-width">适应宽度</option><option value="fit-page">适应页面</option><option value="custom">自定义</option>
+        <label className="compact-control">{t('zoom')}<select value={zoomMode} onChange={(event) => setZoomMode(event.target.value as PdfZoomMode)}>
+          <option value="fit-width">{t('fitWidth')}</option><option value="fit-page">{t('fitPage')}</option><option value="custom">{t('custom')}</option>
         </select></label>
-        <div className="setting-group" title="页面缩放">
-          <button onClick={() => changeZoom(-.1)} aria-label="缩小"><Minus size={14} /></button>
+        <div className="setting-group" title={t('pageZoom')}>
+          <button onClick={() => changeZoom(-.1)} aria-label={t('zoomOut')}><Minus size={14} /></button>
           <span>{Math.round(effectiveScale * 100)}%</span>
-          <button onClick={() => changeZoom(.1)} aria-label="放大"><Plus size={14} /></button>
+          <button onClick={() => changeZoom(.1)} aria-label={t('zoomIn')}><Plus size={14} /></button>
         </div>
         <form className="pdf-page-jump" onSubmit={(event) => { event.preventDefault(); jumpTo(Number(pageInput)) }}>
-          <input aria-label="页码" inputMode="numeric" value={pageInput} onChange={(event) => setPageInput(event.target.value.replace(/\D/g, ''))} />
+          <input aria-label={t('pageNumber')} inputMode="numeric" value={pageInput} onChange={(event) => setPageInput(event.target.value.replace(/\D/g, ''))} />
           <span>/ {totalPages || '—'}</span>
         </form>
-        <button className="icon-button" onClick={onThemeChange} aria-label="切换主题">{theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}</button>
+        <button className="icon-button" onClick={onThemeChange} aria-label={t('toggleTheme')}>{theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}</button>
       </div>
     </header>
     <section className="pdf-stage">
-      {document && viewMode !== 'continuous' && <button className="page-hit left" onClick={() => jumpTo(page - (viewMode === 'double' ? 2 : 1))} aria-label="上一页"><ChevronLeft /></button>}
+      {document && viewMode !== 'continuous' && <button className="page-hit left" onClick={() => jumpTo(page - (viewMode === 'double' ? 2 : 1))} aria-label={t('previousPage')}><ChevronLeft /></button>}
       <div ref={viewportRef} className={`pdf-viewport mode-${viewMode}`} onScroll={onScroll}>
         {document && <div className="pdf-pages">
           {displayedPages.map((pageNumber) => <PdfPage key={pageNumber} document={document} pageNumber={pageNumber} scale={effectiveScale} fallbackSize={pageSize} scrollRoot={viewportRef.current} highlights={highlightsByPage.get(pageNumber) ?? []} onSelection={setSelection} eager={viewMode !== 'continuous' || pageNumber === page} />)}
         </div>}
       </div>
-      {document && viewMode !== 'continuous' && <button className="page-hit right" onClick={() => jumpTo(page + (viewMode === 'double' ? 2 : 1))} aria-label="下一页"><ChevronRight /></button>}
-      {loading && <div className="reader-message">正在打开 PDF…</div>}
-      {error && <div className="reader-message error"><strong>无法打开 PDF</strong><span>{error}</span></div>}
+      {document && viewMode !== 'continuous' && <button className="page-hit right" onClick={() => jumpTo(page + (viewMode === 'double' ? 2 : 1))} aria-label={t('nextPage')}><ChevronRight /></button>}
+      {loading && <div className="reader-message">{t('openingPdf')}</div>}
+      {error && <div className="reader-message error"><strong>{t('cannotOpenPdf')}</strong><span>{error}</span></div>}
       {searchOpen && <form className="pdf-search-bar" onSubmit={(event) => { event.preventDefault(); searchPdf() }}>
         <Search size={16} />
-        <input ref={searchInputRef} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索文本型 PDF" aria-label="PDF 搜索词" />
-        <span>{searching ? '搜索中…' : hits.length ? `${hitIndex + 1} / ${hits.length} 页` : query ? '无结果' : ''}</span>
-        <button type="button" onClick={() => moveSearch(-1)} disabled={!hits.length} aria-label="上一个结果"><ChevronLeft size={16} /></button>
-        <button type="button" onClick={() => moveSearch(1)} disabled={!hits.length} aria-label="下一个结果"><ChevronRight size={16} /></button>
-        <button type="button" onClick={() => setSearchOpen(false)} aria-label="关闭搜索"><X size={16} /></button>
+        <input ref={searchInputRef} value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t('searchPdfBody')} aria-label={t('searchPdf')} />
+        <span>{searching ? t('searching') : hits.length ? t('searchPageResult', { current: hitIndex + 1, total: hits.length }) : query ? t('noResults') : ''}</span>
+        <button type="button" onClick={() => moveSearch(-1)} disabled={!hits.length} aria-label={t('previousResult')}><ChevronLeft size={16} /></button>
+        <button type="button" onClick={() => moveSearch(1)} disabled={!hits.length} aria-label={t('nextResult')}><ChevronRight size={16} /></button>
+        <button type="button" onClick={() => setSearchOpen(false)} aria-label={t('closeSearch')}><X size={16} /></button>
       </form>}
       {selection && <SelectionHighlightAction x={selection.x} y={selection.y} onAdd={addSelectionHighlight} />}
     </section>
     <div className="progress-track"><i style={{ width: `${progress * 100}%` }} /></div>
     {tocOpen && <div className="drawer-backdrop" onMouseDown={() => setTocOpen(false)}><aside className="toc-drawer" onMouseDown={(event) => event.stopPropagation()}>
-      <div className="drawer-head"><strong>PDF 目录</strong><button className="icon-button" onClick={() => setTocOpen(false)}><X size={18} /></button></div>
-      {outline.length ? <ol className="toc-list">{renderOutline(outline)}</ol> : <p className="muted">此 PDF 没有内置目录</p>}
+      <div className="drawer-head"><strong>{t('pdfContents')}</strong><button className="icon-button" onClick={() => setTocOpen(false)} aria-label={t('close')}><X size={18} /></button></div>
+      {outline.length ? <ol className="toc-list">{renderOutline(outline)}</ol> : <p className="muted">{t('noPdfContents')}</p>}
     </aside></div>}
   </main>
 }

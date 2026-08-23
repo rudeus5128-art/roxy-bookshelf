@@ -1,4 +1,5 @@
 export type BookFormat = 'epub' | 'txt' | 'pdf'
+export type AppLanguage = 'en-US' | 'zh-CN'
 
 export interface BookRecord {
   id: string
@@ -29,6 +30,7 @@ export interface BookShelfAssignment {
 
 export interface AppSettings {
   pdfFirstPageCovers: boolean
+  language: AppLanguage
 }
 
 export interface ImportCandidate {
@@ -174,6 +176,7 @@ export interface BookAnnotation {
 }
 
 export interface RoxyApi {
+  getAppVersion(): Promise<string>
   chooseBookFiles(): Promise<string[]>
   getDroppedFilePath(file: File): string
   prepareImports(paths: string[]): Promise<ImportCandidate[]>

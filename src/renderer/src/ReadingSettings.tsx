@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { SlidersHorizontal, X } from 'lucide-react'
 import type { ReadingState } from '../../shared/models'
+import { useI18n } from './I18nContext'
 
 export type TextReadingSettings = Pick<ReadingState,
   'fontSize' | 'lineHeight' | 'contentWidth' | 'fontFamily' |
@@ -28,6 +29,7 @@ export default function ReadingSettings({ settings, onChange }: {
   settings: TextReadingSettings
   onChange<K extends keyof TextReadingSettings>(key: K, value: TextReadingSettings[K]): void
 }) {
+  const { t } = useI18n()
   const [open, setOpen] = useState(false)
   useEffect(() => {
     function onKey(event: KeyboardEvent) { if (event.key === 'Escape') setOpen(false) }
@@ -36,16 +38,16 @@ export default function ReadingSettings({ settings, onChange }: {
   }, [])
 
   return <div className="reader-settings">
-    <button className="icon-button" onClick={() => setOpen((current) => !current)} aria-label="阅读设置"><SlidersHorizontal size={18} /></button>
+    <button className="icon-button" onClick={() => setOpen((current) => !current)} aria-label={t('readingSettings')}><SlidersHorizontal size={18} /></button>
     {open && <div className="settings-popover">
-      <div className="settings-head"><strong>阅读设置</strong><button onClick={() => setOpen(false)} aria-label="关闭阅读设置"><X size={16} /></button></div>
-      <label>阅读模式<select value={settings.readingMode} onChange={(event) => onChange('readingMode', event.target.value as TextReadingSettings['readingMode'])}><option value="paginated">分页</option><option value="continuous">连续滚动</option></select></label>
-      <label>分页布局<select value={settings.pageLayout} disabled={settings.readingMode === 'continuous'} onChange={(event) => onChange('pageLayout', event.target.value as TextReadingSettings['pageLayout'])}><option value="double">双页</option><option value="single">单页</option></select></label>
-      <label>字体<select value={settings.fontFamily} onChange={(event) => onChange('fontFamily', event.target.value)}><option value="system">系统默认</option><option value="sans">无衬线</option><option value="serif">宋体 / 衬线</option><option value="simsun">中易宋体</option></select></label>
-      <label>行距<select value={settings.lineHeight} onChange={(event) => onChange('lineHeight', Number(event.target.value))}><option value="1.4">紧凑</option><option value="1.7">标准</option><option value="2">宽松</option></select></label>
-      <label>段落间距<select value={settings.paragraphSpacing} onChange={(event) => onChange('paragraphSpacing', Number(event.target.value))}><option value="0">无</option><option value="0.65">标准</option><option value="1.1">宽松</option></select></label>
-      <label>阅读宽度<select value={settings.contentWidth} onChange={(event) => onChange('contentWidth', Number(event.target.value))}><option value="600">窄</option><option value="720">标准</option><option value="900">宽</option></select></label>
-      <label>页面边距<select value={settings.pageMargin} onChange={(event) => onChange('pageMargin', Number(event.target.value))}><option value="24">小</option><option value="42">标准</option><option value="64">大</option></select></label>
+      <div className="settings-head"><strong>{t('readingSettings')}</strong><button onClick={() => setOpen(false)} aria-label={t('closeReadingSettings')}><X size={16} /></button></div>
+      <label>{t('readingMode')}<select value={settings.readingMode} onChange={(event) => onChange('readingMode', event.target.value as TextReadingSettings['readingMode'])}><option value="paginated">{t('paginated')}</option><option value="continuous">{t('continuousScroll')}</option></select></label>
+      <label>{t('pageLayout')}<select value={settings.pageLayout} disabled={settings.readingMode === 'continuous'} onChange={(event) => onChange('pageLayout', event.target.value as TextReadingSettings['pageLayout'])}><option value="double">{t('doublePage')}</option><option value="single">{t('singlePage')}</option></select></label>
+      <label>{t('font')}<select value={settings.fontFamily} onChange={(event) => onChange('fontFamily', event.target.value)}><option value="system">{t('systemDefault')}</option><option value="sans">{t('sansSerif')}</option><option value="serif">{t('serif')}</option><option value="simsun">{t('simsun')}</option></select></label>
+      <label>{t('lineHeight')}<select value={settings.lineHeight} onChange={(event) => onChange('lineHeight', Number(event.target.value))}><option value="1.4">{t('compact')}</option><option value="1.7">{t('standard')}</option><option value="2">{t('relaxed')}</option></select></label>
+      <label>{t('paragraphSpacing')}<select value={settings.paragraphSpacing} onChange={(event) => onChange('paragraphSpacing', Number(event.target.value))}><option value="0">{t('noSpacing')}</option><option value="0.65">{t('standard')}</option><option value="1.1">{t('relaxed')}</option></select></label>
+      <label>{t('readingWidth')}<select value={settings.contentWidth} onChange={(event) => onChange('contentWidth', Number(event.target.value))}><option value="600">{t('narrow')}</option><option value="720">{t('standard')}</option><option value="900">{t('wide')}</option></select></label>
+      <label>{t('pageMargin')}<select value={settings.pageMargin} onChange={(event) => onChange('pageMargin', Number(event.target.value))}><option value="24">{t('small')}</option><option value="42">{t('standard')}</option><option value="64">{t('large')}</option></select></label>
     </div>}
   </div>
 }

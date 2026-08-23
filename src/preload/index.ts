@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer, webUtils } from 'electron'
 import type { ImportedMetadata, PdfReadingState, ReadingState, RoxyApi } from '../shared/models'
 
 const api: RoxyApi = {
+  getAppVersion: () => ipcRenderer.invoke('app:version'),
   chooseBookFiles: () => ipcRenderer.invoke('files:choose'),
   getDroppedFilePath: (file) => webUtils.getPathForFile(file),
   prepareImports: (paths) => ipcRenderer.invoke('imports:prepare', paths),

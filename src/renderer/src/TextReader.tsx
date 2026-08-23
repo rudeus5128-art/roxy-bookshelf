@@ -6,6 +6,7 @@ import ReadingSessionStatus from './ReadingSessionStatus'
 import { AnnotationPanel, SelectionHighlightAction, useBookAnnotations } from './AnnotationsPanel'
 import { loadTextPreferences, saveTextPreferences } from './readerPreferences'
 import { friendlyReaderError } from './readerErrors'
+import { useI18n } from './I18nContext'
 
 interface Props { bookRecord: BookRecord; theme: 'light' | 'dark'; onThemeChange(): void; onClose(): void }
 const TXT_DEFAULTS: TextReadingSettings = { ...DEFAULT_READING_SETTINGS }
@@ -45,7 +46,7 @@ function parseTextHighlight(locator: string): TextHighlightLocator | null {
   } catch { return null }
 }
 
-function highlightedLine(text: string, lineStart: number, ranges: RenderedTextHighlightLocator[], onErase: (annotationId: string) => void) {
+function highlightedLine(text: string, lineStart: number, ranges: RenderedTextHighlightLocator[], eraseTitle: string, onErase: (annotationId: string) => void) {
   const intervals = ranges.map((range) => ({
     start: Math.max(0, range.start - lineStart),
     end: Math.min(text.length, range.end - lineStart),
@@ -62,7 +63,7 @@ function highlightedLine(text: string, lineStart: number, ranges: RenderedTextHi
   let cursor = 0
   for (const interval of merged) {
     if (interval.start > cursor) output.push(text.slice(cursor, interval.start))
-    output.push(<mark className="text-highlight" key={`${interval.start}-${interval.end}`} title="点击擦除高亮" onClick={() => interval.annotationId && onErase(interval.annotationId)}>{text.slice(interval.start, interval.end)}</mark>)
+    output.push(<mark className="text-highlight" key={`${interval.start}-${interval.end}`} title={eraseTitle} onClick={() => interval.annotationId && onErase(interval.annotationId)}>{text.slice(interval.start, interval.end)}</mark>)
     cursor = interval.end
   }
   if (cursor < text.length) output.push(text.slice(cursor))
@@ -70,6 +71,7 @@ function highlightedLine(text: string, lineStart: number, ranges: RenderedTextHi
 }
 
 export default function TextReader({ bookRecord, theme, onThemeChange, onClose }: Props) {
+  const { language, t } = useI18n()
   const stageRef = useRef<HTMLElement>(null)
   const viewportRef = useRef<HTMLDivElement>(null)
   const stateRef = useRef<ReadingState | null>(null)
@@ -152,9 +154,9 @@ export default function TextReader({ bookRecord, theme, onThemeChange, onClose }
           }
           return
         }
-        if (current.status === 'error') { setError(current.error || 'TXT 索引失败'); return }
+        if (current.status === 'error') { setError(current.error ? friendlyReaderError('txt', new Error(current.error), language) : t('txtIndexFailed')); return }
         timer = setTimeout(poll, 250)
-      } catch (reason) { if (!disposed) setError(friendlyReaderError('txt', reason)) }
+      } catch (reason) { if (!disposed) setError(friendlyReaderError('txt', reason, language)) }
     }
     poll()
     return () => {
@@ -329,7 +331,7 @@ export default function TextReader({ bookRecord, theme, onThemeChange, onClose }
 
   async function addBookmark() {
     const locator = stateRef.current?.location
-    if (locator) await annotationStore.add('bookmark', locator, `阅读进度 ${Math.round(progress * 100)}%`)
+    if (locator) await annotationStore.add('bookmark', locator, t('readingProgress', { percent: Math.round(progress * 100) }))
   }
 
   async function jumpAnnotation(annotation: BookAnnotation) {
@@ -365,10 +367,10 @@ export default function TextReader({ bookRecord, theme, onThemeChange, onClose }
   }, [effectivePageLayout, pageViewportWidth, settings.readingMode])
 
   return <main className="reader-shell text-reader-shell">
-    <header className="reader-bar"><button className="icon-button" onClick={onClose} aria-label="返回书架"><ArrowLeft size={19} /></button><div className="reader-title"><strong>{bookRecord.title}</strong><ReadingSessionStatus bookId={bookRecord.id} progress={progress} /></div><div className="reader-controls"><button className="icon-button" onClick={() => setTocOpen(true)} aria-label="目录"><BookOpenText size={19} /></button><AnnotationPanel annotations={annotationStore.annotations} onAddBookmark={addBookmark} onJump={jumpAnnotation} onRemove={(annotation) => annotationStore.remove(annotation.id)} /><button className="icon-button" onClick={() => { setSearchOpen(true); setTimeout(() => searchInputRef.current?.focus(), 0) }} aria-label="搜索 TXT"><Search size={18} /></button><label className="compact-control">编码<select value={info?.encoding ?? 'utf8'} onChange={(event) => rebuild(event.target.value as TextEncoding)}>{encodings.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label><div className="setting-group"><button onClick={() => updateSetting('fontSize', Math.max(12, settings.fontSize - 1))}><Minus size={14} /></button><span>{settings.fontSize}</span><button onClick={() => updateSetting('fontSize', Math.min(36, settings.fontSize + 1))}><Plus size={14} /></button></div><ReadingSettings settings={settings} onChange={updateSetting} /><button className="icon-button" onClick={onThemeChange}>{theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}</button></div></header>
-    <section ref={stageRef} className="text-stage">{info?.status === 'ready' && chunks.length ? <>{paginated && <button className="page-hit left" onClick={() => turnPage(-1)} aria-label="上一页"><ChevronLeft /></button>}<div ref={viewportRef} className={`text-viewport mode-${settings.readingMode} layout-${effectivePageLayout}`} style={paginated ? { maxWidth: pageViewportWidth } : undefined} onScroll={onScroll} onWheel={onWheel} onMouseUp={onTextSelection}><article className="text-content" style={{ maxWidth: paginated ? undefined : settings.contentWidth, fontSize: settings.fontSize, lineHeight: settings.lineHeight, fontFamily: fontFamilies[settings.fontFamily], paddingLeft: settings.pageMargin, paddingRight: settings.pageMargin, columnGap: paginated ? settings.pageMargin * 2 : undefined }}>{chunks.map((chunk) => { const ranges = highlightsForChunk(chunk.start); return <section key={chunk.start} data-text-start={chunk.start}>{textLines(chunk.text).map((line, index) => <p key={index} data-line-start={line.start} style={{ margin: `0 0 ${line.text ? settings.paragraphSpacing : Math.max(.25, settings.paragraphSpacing)}em` }}>{highlightedLine(line.text, line.start, ranges, (annotationId) => annotationStore.remove(annotationId))}</p>)}</section> })}</article></div>{paginated && <button className="page-hit right" onClick={() => turnPage(1)} aria-label="下一页"><ChevronRight /></button>}</> : <div className={`reader-message ${error ? 'error' : ''}`}><strong>{error || '正在建立 TXT 索引…'}</strong>{!error && <span>{Math.round((info?.progress ?? 0) * 100)}%</span>}</div>}{searchOpen && <form className="pdf-search-bar" onSubmit={(event) => { event.preventDefault(); searchBook() }}><Search size={16} /><input ref={searchInputRef} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索 TXT 正文" /><span>{searching ? '搜索中…' : results.length ? `${resultIndex + 1} / ${results.length}` : query ? '无结果' : ''}</span><button type="button" onClick={() => moveResult(-1)} disabled={!results.length}><ChevronLeft size={16} /></button><button type="button" onClick={() => moveResult(1)} disabled={!results.length}><ChevronRight size={16} /></button><button type="button" onClick={() => setSearchOpen(false)}><X size={16} /></button></form>}</section>
+    <header className="reader-bar"><button className="icon-button" onClick={onClose} aria-label={t('backToLibrary')}><ArrowLeft size={19} /></button><div className="reader-title"><strong>{bookRecord.title}</strong><ReadingSessionStatus bookId={bookRecord.id} progress={progress} /></div><div className="reader-controls"><button className="icon-button" onClick={() => setTocOpen(true)} aria-label={t('contents')}><BookOpenText size={19} /></button><AnnotationPanel annotations={annotationStore.annotations} onAddBookmark={addBookmark} onJump={jumpAnnotation} onRemove={(annotation) => annotationStore.remove(annotation.id)} /><button className="icon-button" onClick={() => { setSearchOpen(true); setTimeout(() => searchInputRef.current?.focus(), 0) }} aria-label={t('searchTxt')}><Search size={18} /></button><label className="compact-control">{t('encoding')}<select value={info?.encoding ?? 'utf8'} onChange={(event) => rebuild(event.target.value as TextEncoding)}>{encodings.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label><div className="setting-group" title={t('fontSize')}><button onClick={() => updateSetting('fontSize', Math.max(12, settings.fontSize - 1))}><Minus size={14} /></button><span>{settings.fontSize}</span><button onClick={() => updateSetting('fontSize', Math.min(36, settings.fontSize + 1))}><Plus size={14} /></button></div><ReadingSettings settings={settings} onChange={updateSetting} /><button className="icon-button" onClick={onThemeChange} aria-label={t('toggleTheme')}>{theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}</button></div></header>
+    <section ref={stageRef} className="text-stage">{info?.status === 'ready' && chunks.length ? <>{paginated && <button className="page-hit left" onClick={() => turnPage(-1)} aria-label={t('previousPage')}><ChevronLeft /></button>}<div ref={viewportRef} className={`text-viewport mode-${settings.readingMode} layout-${effectivePageLayout}`} style={paginated ? { maxWidth: pageViewportWidth } : undefined} onScroll={onScroll} onWheel={onWheel} onMouseUp={onTextSelection}><article className="text-content" style={{ maxWidth: paginated ? undefined : settings.contentWidth, fontSize: settings.fontSize, lineHeight: settings.lineHeight, fontFamily: fontFamilies[settings.fontFamily], paddingLeft: settings.pageMargin, paddingRight: settings.pageMargin, columnGap: paginated ? settings.pageMargin * 2 : undefined }}>{chunks.map((chunk) => { const ranges = highlightsForChunk(chunk.start); return <section key={chunk.start} data-text-start={chunk.start}>{textLines(chunk.text).map((line, index) => <p key={index} data-line-start={line.start} style={{ margin: `0 0 ${line.text ? settings.paragraphSpacing : Math.max(.25, settings.paragraphSpacing)}em` }}>{highlightedLine(line.text, line.start, ranges, t('clickEraseHighlight'), (annotationId) => annotationStore.remove(annotationId))}</p>)}</section> })}</article></div>{paginated && <button className="page-hit right" onClick={() => turnPage(1)} aria-label={t('nextPage')}><ChevronRight /></button>}</> : <div className={`reader-message ${error ? 'error' : ''}`}><strong>{error || t('txtIndexing')}</strong>{!error && <span>{Math.round((info?.progress ?? 0) * 100)}%</span>}</div>}{searchOpen && <form className="pdf-search-bar" onSubmit={(event) => { event.preventDefault(); searchBook() }}><Search size={16} /><input ref={searchInputRef} value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t('searchTxtBody')} /><span>{searching ? t('searching') : results.length ? `${resultIndex + 1} / ${results.length}` : query ? t('noResults') : ''}</span><button type="button" onClick={() => moveResult(-1)} disabled={!results.length} aria-label={t('previousResult')}><ChevronLeft size={16} /></button><button type="button" onClick={() => moveResult(1)} disabled={!results.length} aria-label={t('nextResult')}><ChevronRight size={16} /></button><button type="button" onClick={() => setSearchOpen(false)} aria-label={t('closeSearch')}><X size={16} /></button></form>}</section>
     <div className="progress-track"><i style={{ width: `${progress * 100}%` }} /></div>
-    {tocOpen && <div className="drawer-backdrop" onMouseDown={() => setTocOpen(false)}><aside className="toc-drawer" onMouseDown={(event) => event.stopPropagation()}><div className="drawer-head"><strong>目录</strong><button className="icon-button" onClick={() => setTocOpen(false)}><X size={18} /></button></div><label className="chapter-toggle"><input type="checkbox" checked={info?.detectChapters ?? true} onChange={(event) => info && rebuild(info.encoding, event.target.checked)} />自动识别章节</label>{info?.chapters.length ? <ol className="toc-list">{info.chapters.map((chapter) => <li key={`${chapter.byteOffset}-${chapter.title}`}><button onClick={() => { loadAt(chapter.byteOffset); setTocOpen(false) }}>{chapter.title}</button></li>)}</ol> : <p className="muted">没有识别到章节，可关闭自动识别后正常阅读。</p>}</aside></div>}
+    {tocOpen && <div className="drawer-backdrop" onMouseDown={() => setTocOpen(false)}><aside className="toc-drawer" onMouseDown={(event) => event.stopPropagation()}><div className="drawer-head"><strong>{t('contents')}</strong><button className="icon-button" onClick={() => setTocOpen(false)} aria-label={t('close')}><X size={18} /></button></div><label className="chapter-toggle"><input type="checkbox" checked={info?.detectChapters ?? true} onChange={(event) => info && rebuild(info.encoding, event.target.checked)} />{t('autoDetectChapters')}</label>{info?.chapters.length ? <ol className="toc-list">{info.chapters.map((chapter) => <li key={`${chapter.byteOffset}-${chapter.title}`}><button onClick={() => { loadAt(chapter.byteOffset); setTocOpen(false) }}>{chapter.title}</button></li>)}</ol> : <p className="muted">{t('noChapters')}</p>}</aside></div>}
     {selection && <SelectionHighlightAction x={selection.x} y={selection.y} onAdd={addSelectionHighlight} />}
   </main>
 }

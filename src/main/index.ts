@@ -4,6 +4,7 @@ import crypto from 'node:crypto'
 import { app, BrowserWindow, dialog, ipcMain, net, protocol, shell } from 'electron'
 import { pathToFileURL } from 'node:url'
 import type { AnnotationKind, ImportedMetadata, PdfImportCandidate } from '../shared/models'
+import { translate, type TranslationKey } from '../shared/i18n'
 import { isPhaseOneBook } from '../shared/bookFormat'
 import { getTextInfo, initializeTextBook, prepareTextImports, readTextChunk, searchText, startTextIndex } from './textService'
 import { renderPdfFirstPageCover } from './pdfCoverService'
@@ -20,6 +21,19 @@ let pendingOpenFiles: string[] = []
 let rendererReady = false
 let pdfCoverBackfillPromise: Promise<void> | null = null
 let startupNotice = ''
+
+function mainT(key: TranslationKey): string {
+  return translate(getAppSettings().language, key)
+}
+
+function currentAppVersion(): string {
+  if (app.isPackaged) return app.getVersion()
+  try {
+    const packageMetadata = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../package.json'), 'utf8')) as { version?: string }
+    if (packageMetadata.version) return packageMetadata.version
+  } catch {}
+  return app.getVersion()
+}
 
 if (!app.isPackaged && process.env.ROXY_USER_DATA_DIR) {
   app.setPath('userData', path.resolve(process.env.ROXY_USER_DATA_DIR))
@@ -76,7 +90,7 @@ function createWindow(): void {
     minHeight: 600,
     show: false,
     backgroundColor: '#111318',
-    title: 'Roxy 的书架',
+    title: mainT('appName'),
     autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, '../preload/index.js'),
@@ -135,8 +149,8 @@ async function backfillMissingPdfCovers(): Promise<void> {
 function registerIpc(): void {
   ipcMain.handle('files:choose', async () => {
     const result = await dialog.showOpenDialog(mainWindow!, {
-      title: '导入电子书', properties: ['openFile', 'multiSelections'],
-      filters: [{ name: '电子书', extensions: ['epub', 'txt', 'pdf'] }]
+      title: mainT('importDialogTitle'), properties: ['openFile', 'multiSelections'],
+      filters: [{ name: mainT('ebookFilter'), extensions: ['epub', 'txt', 'pdf'] }]
     })
     return result.canceled ? [] : result.filePaths
   })
@@ -164,6 +178,7 @@ function registerIpc(): void {
   ipcMain.handle('shelves:set-book', (_event, bookId: string, shelfIds: string[]) => setBookShelves(bookId, shelfIds))
   ipcMain.handle('shelves:set-books', (_event, assignments) => setBooksShelves(assignments))
   ipcMain.handle('settings:get', () => getAppSettings())
+  ipcMain.handle('app:version', () => currentAppVersion())
   ipcMain.handle('app:take-startup-notice', () => {
     const notice = startupNotice
     startupNotice = ''
@@ -171,6 +186,7 @@ function registerIpc(): void {
   })
   ipcMain.handle('settings:update', (_event, settings) => {
     const updated = updateAppSettings(settings)
+    mainWindow?.setTitle(translate(updated.language, 'appName'))
     mainWindow?.webContents.send('library:changed')
     if (updated.pdfFirstPageCovers) void backfillMissingPdfCovers()
     return updated
@@ -185,8 +201,8 @@ function registerIpc(): void {
     const book = findBookById(id)
     if (!book) throw new Error('书籍不在书架中')
     const result = await dialog.showOpenDialog(mainWindow!, {
-      title: '选择封面图片', properties: ['openFile'],
-      filters: [{ name: '图片', extensions: ['jpg', 'jpeg', 'png', 'webp'] }]
+      title: mainT('coverDialogTitle'), properties: ['openFile'],
+      filters: [{ name: mainT('imageFilter'), extensions: ['jpg', 'jpeg', 'png', 'webp'] }]
     })
     if (result.canceled || !result.filePaths[0]) return null
     const source = result.filePaths[0]
