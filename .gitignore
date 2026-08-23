@@ -1,0 +1,15 @@
+node_modules/
+out/
+release/
+outputs/
+work/
+coverage/
+*.log
+*.tsbuildinfo
+.DS_Store
+.env
+.env.*
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3

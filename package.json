@@ -1,0 +1,75 @@
+{
+  "name": "roxy-bookshelf",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Roxy 的书架 — 本地优先的 Windows 电子书阅读器",
+  "main": "out/main/index.js",
+  "author": "Roxy",
+  "license": "SEE LICENSE IN LICENSE",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
+    "test": "vitest run",
+    "preview": "electron-vite preview",
+    "package:win": "npm run build && electron-builder --win nsis"
+  },
+  "dependencies": {
+    "@napi-rs/canvas": "1.0.7",
+    "chardet": "2.2.0",
+    "epubjs": "0.3.93",
+    "iconv-lite": "0.7.3",
+    "lucide-react": "1.33.0",
+    "pdfjs-dist": "6.2.108",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "sql.js": "1.14.2"
+  },
+  "overrides": {
+    "epubjs": {
+      "@xmldom/xmldom": "0.8.15"
+    }
+  },
+  "devDependencies": {
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.4",
+    "@types/sql.js": "1.4.11",
+    "@vitejs/plugin-react": "5.2.0",
+    "electron": "43.4.1",
+    "electron-builder": "26.15.3",
+    "electron-vite": "5.0.0",
+    "typescript": "6.0.3",
+    "vite": "7.3.6",
+    "vitest": "4.1.11"
+  },
+  "build": {
+    "appId": "local.roxy.bookshelf",
+    "productName": "Roxy 的书架",
+    "asar": true,
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "out/**/*",
+      "node_modules/sql.js/dist/sql-wasm.wasm",
+      "package.json"
+    ],
+    "fileAssociations": [
+      { "ext": "epub", "name": "EPUB 电子书", "icon": "epub.ico", "role": "Viewer" },
+      { "ext": "txt", "name": "文本电子书", "icon": "txt.ico", "role": "Viewer" },
+      { "ext": "pdf", "name": "PDF 文档", "icon": "pdf.ico", "role": "Viewer" }
+    ],
+    "win": {
+      "target": ["nsis"],
+      "icon": "build/icon.ico",
+      "artifactName": "Roxy-Bookshelf-${version}-Setup.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "deleteAppDataOnUninstall": false
+    }
+  }
+}

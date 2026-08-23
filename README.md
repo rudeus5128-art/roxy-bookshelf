@@ -1,0 +1,86 @@
+<p align="center">
+  <img src="./build/roxy-app-icon-character-v9-large.png" width="160" alt="Roxy 的书架图标">
+</p>
+
+<h1 align="center">Roxy 的书架</h1>
+
+<p align="center">
+  面向 Windows 的本地优先私人阅读器。让书留在你的电脑里，让阅读回到正文。
+</p>
+
+<p align="center">
+  <strong>EPUB</strong> · <strong>TXT</strong> · <strong>PDF</strong> · 完全离线 · 无账户 · 无遥测
+</p>
+
+![Roxy 的书架界面](./docs/screenshots/bookshelf.png)
+
+## 为什么选择 Roxy
+
+Roxy 不追求成为功能最多的阅读器。它专注于稳定、安全、快速地打开本地书籍，
+并用克制的界面保留阅读所需的能力。
+
+## 特性
+
+- EPUB、TXT、PDF 本地阅读
+- 清晰的书架、搜索、自定义子书架与批量整理
+- 目录、正文搜索、可靠的阅读位置恢复、书签与高亮
+- TXT 自动编码识别，支持 UTF-8、UTF-16、GBK、GB18030 等编码切换
+- PDF 连续滚动、单页、双页、缩放及页面适配
+- EPUB / TXT 自适应单页与双页布局，兼顾全屏与窗口阅读
+- 仅在真实阅读活动期间累计的本地阅读统计
+- 完整明暗主题和 Windows 文件关联，资源管理器中可直接打开
+
+## 阅读界面
+
+工具栏保持紧凑，目录、搜索、书签、字号和版式设置在需要时才出现。
+
+![Roxy TXT 阅读界面](./docs/screenshots/reader.png)
+
+## 原则
+
+- 核心功能完全离线可用
+- 不上传书籍、文件名、阅读记录或统计数据
+- 不修改原始 EPUB、TXT、PDF 文件
+- 阅读器功能和本地数据异常不应损坏用户书籍
+
+完整产品约束参见 [ROXY_PRODUCT_SPEC.txt](./ROXY_PRODUCT_SPEC.txt)。
+
+## 开发环境
+
+- Windows 10/11
+- Node.js 20 或更高版本
+- npm
+
+```powershell
+npm install
+npm run dev
+```
+
+## 检查与构建
+
+```powershell
+npm run typecheck
+npm test
+npm run build
+npm run package:win
+```
+
+`npm run package:win` 会生成 Windows NSIS 安装包。
+
+## 技术栈
+
+Electron、React、TypeScript、electron-vite、epub.js、PDF.js、sql.js。
+
+## Credits
+
+tai and codex
+
+## 许可证与视觉素材
+
+程序源代码采用 [MIT License](./LICENSE)。MIT 授权仅适用于程序源代码，
+不适用于仓库中的第三方角色美术、插画、图标、参考图片或其他相关视觉素材。
+
+这些视觉素材不以 MIT、CC0、CC BY 或其他开放内容许可证提供。本项目不主张
+拥有其中涉及的第三方角色、名称、美术或其他知识产权，也不代表向使用者授予
+相关权利；所有相关权利归各自权利人所有。详情见
+[THIRD_PARTY_ASSETS.md](./THIRD_PARTY_ASSETS.md)。
