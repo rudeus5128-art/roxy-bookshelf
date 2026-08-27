@@ -50,7 +50,10 @@ export default function Reader({ bookRecord, theme, onThemeChange, onClose }: Re
   const stageRef = useRef<HTMLElement>(null)
   const viewportRef = useRef<HTMLDivElement>(null)
   const engineRef = useRef<{ book: any; rendition: any } | null>(null)
-  const wheelTimeRef = useRef(0)
+  const navigationPendingRef = useRef(false)
+  const navigationSequenceRef = useRef(0)
+  const wheelGestureActiveRef = useRef(false)
+  const wheelGestureTimerRef = useRef<number | null>(null)
   const stateRef = useRef<ReadingState | null>(null)
   const settingsRef = useRef<TextReadingSettings>(DEFAULT_READING_SETTINGS)
   const spreadRef = useRef<boolean | null>(null)
@@ -317,7 +320,30 @@ export default function Reader({ bookRecord, theme, onThemeChange, onClose }: Re
 
   useEffect(() => () => {
     if (highlightLayoutTimerRef.current !== null) window.clearTimeout(highlightLayoutTimerRef.current)
+    if (wheelGestureTimerRef.current !== null) window.clearTimeout(wheelGestureTimerRef.current)
   }, [])
+
+  async function navigatePage(direction: 'next' | 'prev') {
+    const rendition = engineRef.current?.rendition
+    if (!rendition || navigationPendingRef.current) return
+    const sequence = ++navigationSequenceRef.current
+    navigationPendingRef.current = true
+    try { await rendition[direction]() } catch {}
+    finally {
+      if (sequence === navigationSequenceRef.current) navigationPendingRef.current = false
+    }
+  }
+
+  async function navigateTo(target: string | number) {
+    const rendition = engineRef.current?.rendition
+    if (!rendition) return
+    const sequence = ++navigationSequenceRef.current
+    navigationPendingRef.current = true
+    try { await rendition.display(target) } catch {}
+    finally {
+      if (sequence === navigationSequenceRef.current) navigationPendingRef.current = false
+    }
+  }
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -328,10 +354,10 @@ export default function Reader({ bookRecord, theme, onThemeChange, onClose }: Re
       if (imagePreview) { setImagePreview(null); return }
       if (document.fullscreenElement) document.exitFullscreen().catch(() => {})
       }
-      if (['ArrowLeft', 'PageUp'].includes(event.key)) { event.preventDefault(); engineRef.current?.rendition.prev() }
-      if (['ArrowRight', 'PageDown'].includes(event.key)) { event.preventDefault(); engineRef.current?.rendition.next() }
-      if (event.key === 'Home') { event.preventDefault(); engineRef.current?.rendition.display(0) }
-      if (event.key === 'End') { event.preventDefault(); engineRef.current?.rendition.display(engineRef.current?.book.spine.last().href) }
+      if (['ArrowLeft', 'PageUp'].includes(event.key)) { event.preventDefault(); void navigatePage('prev') }
+      if (['ArrowRight', 'PageDown'].includes(event.key)) { event.preventDefault(); void navigatePage('next') }
+      if (event.key === 'Home') { event.preventDefault(); void navigateTo(0) }
+      if (event.key === 'End') { event.preventDefault(); const href = engineRef.current?.book.spine.last().href; if (href) void navigateTo(href) }
       if (event.key === 'F11') { event.preventDefault(); document.documentElement.requestFullscreen().catch(() => {}) }
     }
     window.addEventListener('keydown', onKeyDown)
@@ -372,26 +398,31 @@ export default function Reader({ bookRecord, theme, onThemeChange, onClose }: Re
         if (index % 4 === 0) await new Promise<void>((resolve) => setTimeout(resolve, 0))
       }
       setResults(found)
-      if (found[0]) engineRef.current?.rendition.display(found[0].cfi)
+      if (found[0]) void navigateTo(found[0].cfi)
     } finally { setSearching(false) }
   }
 
   function moveResult(direction: 1 | -1) {
     if (!results.length) return
     const next = (resultIndex + direction + results.length) % results.length
-    setResultIndex(next); engineRef.current?.rendition.display(results[next].cfi)
+    setResultIndex(next); void navigateTo(results[next].cfi)
   }
 
   function renderToc(items: TocItem[]) {
-    return items.map((item) => <li key={item.href}><button onClick={() => { engineRef.current?.rendition.display(item.href); setTocOpen(false) }}>{item.label.trim()}</button>{item.subitems?.length ? <ul>{renderToc(item.subitems)}</ul> : null}</li>)
+    return items.map((item) => <li key={item.href}><button onClick={() => { void navigateTo(item.href); setTocOpen(false) }}>{item.label.trim()}</button>{item.subitems?.length ? <ul>{renderToc(item.subitems)}</ul> : null}</li>)
   }
 
   function onWheel(event: React.WheelEvent) {
     if (settings.readingMode === 'continuous') return
-    const now = Date.now()
-    if (Math.abs(event.deltaY) < 12 || now - wheelTimeRef.current < 280) return
-    wheelTimeRef.current = now
-    if (event.deltaY > 0) engineRef.current?.rendition.next(); else engineRef.current?.rendition.prev()
+    if (wheelGestureTimerRef.current !== null) window.clearTimeout(wheelGestureTimerRef.current)
+    wheelGestureTimerRef.current = window.setTimeout(() => {
+      wheelGestureActiveRef.current = false
+      wheelGestureTimerRef.current = null
+    }, 180)
+    if (wheelGestureActiveRef.current || Math.abs(event.deltaY) < 12) return
+    wheelGestureActiveRef.current = true
+    event.preventDefault()
+    void navigatePage(event.deltaY > 0 ? 'next' : 'prev')
   }
 
   async function addBookmark() {
@@ -400,7 +431,7 @@ export default function Reader({ bookRecord, theme, onThemeChange, onClose }: Re
   }
 
   async function jumpAnnotation(annotation: BookAnnotation) {
-    await engineRef.current?.rendition.display(annotation.locator)
+    await navigateTo(annotation.locator)
   }
 
   async function removeAnnotation(annotation: BookAnnotation) {
@@ -459,7 +490,7 @@ export default function Reader({ bookRecord, theme, onThemeChange, onClose }: Re
 
   return <main className="reader-shell">
     <header className="reader-bar"><button className="icon-button" onClick={onClose} aria-label={t('backToLibrary')}><ArrowLeft size={19} /></button><div className="reader-title"><strong>{bookRecord.title}</strong><ReadingSessionStatus bookId={bookRecord.id} progress={progress} /></div><div className="reader-controls"><button className="icon-button" onClick={() => setTocOpen(true)} aria-label={t('contents')}><BookOpenText size={19} /></button><AnnotationPanel annotations={annotationStore.annotations} onAddBookmark={addBookmark} onJump={jumpAnnotation} onRemove={removeAnnotation} /><button className="icon-button" onClick={() => { setSearchOpen(true); setTimeout(() => searchInputRef.current?.focus(), 0) }} aria-label={t('searchEpub')}><Search size={18} /></button><div className="setting-group" title={t('fontSize')}><button onClick={() => updateSetting('fontSize', Math.max(12, settings.fontSize - 1))}><Minus size={14} /></button><span>{settings.fontSize}</span><button onClick={() => updateSetting('fontSize', Math.min(36, settings.fontSize + 1))}><Plus size={14} /></button></div><ReadingSettings settings={settings} onChange={updateSetting} /><button className="icon-button" onClick={onThemeChange} aria-label={t('toggleTheme')}>{theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}</button></div></header>
-    <section ref={stageRef} className="reading-stage" onWheel={onWheel}>{settings.readingMode === 'paginated' && <button className="page-hit left" onClick={() => engineRef.current?.rendition.prev()} aria-label={t('previousPage')}><ChevronLeft /></button>}<div className="epub-wrap" style={{ maxWidth: useDoublePage ? settings.contentWidth * 2 + 120 : settings.contentWidth + 120 }}><div ref={viewportRef} className="epub-viewport" /></div>{settings.readingMode === 'paginated' && <button className="page-hit right" onClick={() => engineRef.current?.rendition.next()} aria-label={t('nextPage')}><ChevronRight /></button>}{loading && <div className="reader-message">{t('opening')}</div>}{error && <div className="reader-message error"><strong>{t('cannotOpenEpub')}</strong><span>{error}</span></div>}{searchOpen && <form className="pdf-search-bar" onSubmit={(event) => { event.preventDefault(); searchBook() }}><Search size={16} /><input ref={searchInputRef} value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t('searchEpubBody')} /><span>{searching ? t('searching') : results.length ? `${resultIndex + 1} / ${results.length}` : query ? t('noResults') : ''}</span><button type="button" onClick={() => moveResult(-1)} disabled={!results.length} aria-label={t('previousResult')}><ChevronLeft size={16} /></button><button type="button" onClick={() => moveResult(1)} disabled={!results.length} aria-label={t('nextResult')}><ChevronRight size={16} /></button><button type="button" onClick={() => setSearchOpen(false)} aria-label={t('closeSearch')}><X size={16} /></button></form>}</section>
+    <section ref={stageRef} className="reading-stage" onWheel={onWheel}>{settings.readingMode === 'paginated' && <button className="page-hit left" onClick={() => void navigatePage('prev')} aria-label={t('previousPage')}><ChevronLeft /></button>}<div className="epub-wrap" style={{ maxWidth: useDoublePage ? settings.contentWidth * 2 + 120 : settings.contentWidth + 120 }}><div ref={viewportRef} className="epub-viewport" /></div>{settings.readingMode === 'paginated' && <button className="page-hit right" onClick={() => void navigatePage('next')} aria-label={t('nextPage')}><ChevronRight /></button>}{loading && <div className="reader-message">{t('opening')}</div>}{error && <div className="reader-message error"><strong>{t('cannotOpenEpub')}</strong><span>{error}</span></div>}{searchOpen && <form className="pdf-search-bar" onSubmit={(event) => { event.preventDefault(); searchBook() }}><Search size={16} /><input ref={searchInputRef} value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t('searchEpubBody')} /><span>{searching ? t('searching') : results.length ? `${resultIndex + 1} / ${results.length}` : query ? t('noResults') : ''}</span><button type="button" onClick={() => moveResult(-1)} disabled={!results.length} aria-label={t('previousResult')}><ChevronLeft size={16} /></button><button type="button" onClick={() => moveResult(1)} disabled={!results.length} aria-label={t('nextResult')}><ChevronRight size={16} /></button><button type="button" onClick={() => setSearchOpen(false)} aria-label={t('closeSearch')}><X size={16} /></button></form>}</section>
     <div className="progress-track"><i style={{ width: `${progress * 100}%` }} /></div>
     {tocOpen && <div className="drawer-backdrop" onMouseDown={() => setTocOpen(false)}><aside className="toc-drawer" onMouseDown={(event) => event.stopPropagation()}><div className="drawer-head"><strong>{t('contents')}</strong><button className="icon-button" onClick={() => setTocOpen(false)} aria-label={t('close')}><X size={18} /></button></div>{toc.length ? <ol className="toc-list">{renderToc(toc)}</ol> : <p className="muted">{t('noContents')}</p>}</aside></div>}
     {imagePreview && <div className="image-preview-backdrop" role="presentation" onMouseDown={() => setImagePreview(null)}><div className="image-preview" role="dialog" aria-modal="true" aria-label={t('viewIllustration')} onMouseDown={(event) => event.stopPropagation()}><div className="image-preview-toolbar"><button className="icon-button" onClick={() => updateImageZoom(-.25)} aria-label={t('zoomOutIllustration')} disabled={imagePreview.zoom <= .5}><Minus size={18} /></button><button className="image-preview-zoom" onClick={() => updateImageZoom('reset')} aria-label={t('fitWindow')}>{Math.round(imagePreview.zoom * 100)}%</button><button className="icon-button" onClick={() => updateImageZoom(.25)} aria-label={t('zoomInIllustration')} disabled={imagePreview.zoom >= 4}><Plus size={18} /></button><button className="icon-button image-preview-close" onClick={() => setImagePreview(null)} aria-label={t('closeIllustration')}><X size={20} /></button></div><div className="image-preview-stage" onWheel={onImageWheel} onPointerDown={onImagePointerDown} onPointerMove={onImagePointerMove} onPointerUp={onImagePointerEnd} onPointerCancel={onImagePointerEnd}><img src={imagePreview.src} alt={imagePreview.alt} style={{ transform: `translate(${imagePreview.offsetX}px, ${imagePreview.offsetY}px) scale(${imagePreview.zoom})` }} /></div></div></div>}
